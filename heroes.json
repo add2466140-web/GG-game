@@ -7,13 +7,52 @@
     "type": "Destek",
     "stars": 6,
     "power": 78512,
-    "stats": {
-      "hp": 22800,
-      "atk": 837,
-      "def": 1222,
-      "speed": 109
-    },
+    "stats": { "hp": 22800, "atk": 837, "def": 1222, "speed": 109 },
     "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80"
+  },
+  {
+    "id": "kael_mage",
+    "name": "Kael",
+    "title": "60. Svy. Kael",
+    "rarity": "Nadir",
+    "type": "Saldırı",
+    "stars": 6,
+    "power": 45800,
+    "stats": { "hp": 15100, "atk": 1350, "def": 840, "speed": 103 },
+    "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80"
+  },
+  {
+    "id": "elhain_archer",
+    "name": "Elhain",
+    "title": "60. Svy. Elhain",
+    "rarity": "Nadir",
+    "type": "Saldırı",
+    "stars": 6,
+    "power": 41200,
+    "stats": { "hp": 14200, "atk": 1280, "def": 810, "speed": 105 },
+    "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&q=80"
+  },
+  {
+    "id": "galek_orc",
+    "name": "Galek",
+    "title": "50. Svy. Galek",
+    "rarity": "Nadir",
+    "type": "Saldırı",
+    "stars": 5,
+    "power": 38900,
+    "stats": { "hp": 13900, "atk": 1310, "def": 790, "speed": 104 },
+    "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80"
+  },
+  {
+    "id": "athel_knight",
+    "name": "Athel",
+    "title": "50. Svy. Athel",
+    "rarity": "Nadir",
+    "type": "Saldırı",
+    "stars": 5,
+    "power": 39400,
+    "stats": { "hp": 14500, "atk": 1250, "def": 830, "speed": 102 },
+    "avatar": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=200&q=80"
   },
   {
     "id": "khafre_guard",
@@ -23,12 +62,40 @@
     "type": "Saldırı",
     "stars": 6,
     "power": 52100,
-    "stats": {
-      "hp": 18500,
-      "atk": 1420,
-      "def": 950,
-      "speed": 102
-    },
+    "stats": { "hp": 18500, "atk": 1420, "def": 950, "speed": 102 },
     "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80"
+  },
+  {
+    "id": "stag_knight",
+    "name": "Stag Knight",
+    "title": "60. Svy. Stag Knight",
+    "rarity": "Epik",
+    "type": "Destek",
+    "stars": 6,
+    "power": 58300,
+    "stats": { "hp": 20100, "atk": 1100, "def": 1150, "speed": 106 },
+    "avatar": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=200&q=80"
+  },
+  {
+    "id": "arbiter_queen",
+    "name": "Arbiter",
+    "title": "60. Svy. Arbiter",
+    "rarity": "Efsanevi",
+    "type": "Destek",
+    "stars": 6,
+    "power": 92400,
+    "stats": { "hp": 26400, "atk": 990, "def": 1410, "speed": 118 },
+    "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80"
+  },
+  {
+    "id": "duchess_lilitu",
+    "name": "Duchess Lilitu",
+    "title": "60. Svy. Duchess Lilitu",
+    "rarity": "Efsanevi",
+    "type": "Destek",
+    "stars": 6,
+    "power": 95000,
+    "stats": { "hp": 28500, "atk": 920, "def": 1500, "speed": 111 },
+    "avatar": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&q=80"
   }
 ]
