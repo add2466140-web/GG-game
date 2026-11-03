@@ -1,0 +1,29 @@
+[
+  {
+    "id": "mystery",
+    "name": "Gizemli Parça",
+    "rarity": "Yaygın, Sıra Dışı, Nadir",
+    "cost": 500,
+    "currency": "Gümüş",
+    "icon": "🟢",
+    "description": "Bir Yaygın, Sıra Dışı veya Nadir Şampiyon çağırır."
+  },
+  {
+    "id": "ancient",
+    "name": "Antik Parça",
+    "rarity": "Nadir, Epik, Efsanevi",
+    "cost": 20000,
+    "currency": "Gümüş",
+    "icon": "🔵",
+    "description": "Nadir, Epik veya Efsanevi Şampiyon çağırır."
+  },
+  {
+    "id": "sacred",
+    "name": "Kutsal Parça",
+    "rarity": "Epik, Efsanevi",
+    "cost": 100,
+    "currency": "Yakut",
+    "icon": "🟡",
+    "description": "Yüksek oranla Epik veya Efsanevi Şampiyon çağırır."
+  }
+]
