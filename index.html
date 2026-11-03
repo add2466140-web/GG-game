@@ -27,15 +27,15 @@
 
     <!-- Oyuncu Kartı -->
     <div class="stats">
-        <h3 id="hero-name">Şövalye</h3>
-        <p>Can: <span id="player-hp">100</span> / 100</p>
+        <h3>Şövalye</h3>
+        <p>Can: <span id="player-hp">100</span> / <span id="player-max-hp">100</span></p>
         <div class="bar-container"><div id="player-bar" class="bar"></div></div>
     </div>
 
     <!-- Düşman Kartı -->
     <div class="stats">
         <h3 id="enemy-name">Vahşi Ork</h3>
-        <p>Can: <span id="enemy-hp">80</span> / 80</p>
+        <p>Can: <span id="enemy-hp">80</span> / <span id="enemy-max-hp">80</span></p>
         <div class="bar-container"><div id="enemy-bar" class="bar enemy-bar"></div></div>
     </div>
 
@@ -53,10 +53,13 @@
         let eHp = 80, eMaxHp = 80;
         let level = 1;
         let score = 0;
+        let dusmanlar = ["Vahşi Ork", "Zehirli Goblin", "İskelet Savaşçı", "Kara Ejderha (Boss)"];
 
         function updateUI() {
             document.getElementById('player-hp').innerText = pHp;
+            document.getElementById('player-max-hp').innerText = pMaxHp;
             document.getElementById('enemy-hp').innerText = eHp;
+            document.getElementById('enemy-max-hp').innerText = eMaxHp;
             document.getElementById('level').innerText = level;
             document.getElementById('score').innerText = score;
 
@@ -72,11 +75,11 @@
 
         function dusmanSaldirisi() {
             if (eHp > 0) {
-                let hasar = Math.floor(Math.random() * 8) + 5;
+                let hasar = Math.floor(Math.random() * (level * 3)) + 5;
                 pHp -= hasar;
                 if (pHp < 0) pHp = 0;
                 if (pHp === 0) {
-                    logYaz("Yenildin! Oyun yeniden başlıyor...");
+                    logYaz("Yenildin! Oyun baştan başlıyor...");
                     setTimeout(resetGame, 2000);
                 }
             }
@@ -110,7 +113,7 @@
 
         function iyiles() {
             if (pHp <= 0 || eHp <= 0) return;
-            let miktar = 20;
+            let miktar = 25;
             pHp += miktar;
             if (pHp > pMaxHp) pHp = pMaxHp;
             logYaz(`🧪 İyileştin! +${miktar} Can kazandın.`);
@@ -122,18 +125,23 @@
         function checkVictory() {
             if (eHp <= 0) {
                 eHp = 0;
-                score += 100;
+                score += level * 100;
                 level++;
-                logYaz(`🎉 Zafer! Düşmanı yendin, Seviye ${level} e geçiliyor...`);
+                logYaz(`🎉 Zafer! Seviye ${level} e geçiliyor...`);
                 setTimeout(yeniDusman, 2000);
             }
         }
 
         function yeniDusman() {
-            eMaxHp = 80 + (level * 20);
+            eMaxHp = 80 + (level * 25);
             eHp = eMaxHp;
-            pHp = pMaxHp; // Her tur kahraman biraz tazelenir
-            logYaz(`Seviye ${level}! Yeni ve daha güçlü bir düşman belirdi!`);
+            pMaxHp = 100 + (level * 10); // Seviye atladıkça kahramanın da max canı artsın
+            pHp = pMaxHp; 
+            
+            let dusmanIndex = (level - 1) % dusmanlar.length;
+            document.getElementById('enemy-name').innerText = dusmanlar[dusmanIndex];
+            
+            logYaz(`Seviye ${level}! Karşında: ${dusmanlar[dusmanIndex]}!`);
             updateUI();
         }
 
@@ -141,6 +149,7 @@
             pHp = 100; pMaxHp = 100;
             eHp = 80; eMaxHp = 80;
             level = 1; score = 0;
+            document.getElementById('enemy-name').innerText = "Vahşi Ork";
             logYaz("Oyun sıfırlandı. Tekrar başla!");
             updateUI();
         }
