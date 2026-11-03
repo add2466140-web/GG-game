@@ -1,0 +1,34 @@
+[
+  {
+    "id": "dorothy_gale",
+    "name": "Dorothy Gale",
+    "title": "60. Svy. Dorothy Gale",
+    "rarity": "Efsanevi",
+    "type": "Destek",
+    "stars": 6,
+    "power": 78512,
+    "stats": {
+      "hp": 22800,
+      "atk": 837,
+      "def": 1222,
+      "speed": 109
+    },
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80"
+  },
+  {
+    "id": "khafre_guard",
+    "name": "Khafre",
+    "title": "60. Svy. Khafre",
+    "rarity": "Epik",
+    "type": "Saldırı",
+    "stars": 6,
+    "power": 52100,
+    "stats": {
+      "hp": 18500,
+      "atk": 1420,
+      "def": 950,
+      "speed": 102
+    },
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80"
+  }
+]
