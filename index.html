@@ -3,225 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Raid: Shadow Legends - Complete Master Edition</title>
+    <title>Raid: Shadow Legends - Modular Data Engine</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background-color: #030509; color: #f8fafc; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* ÜST BAR (RAID ORİJİNAL) */
-        .top-hud { background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 2px solid #b45309; z-index: 20; font-size: 11px; box-shadow: 0 4px 12px rgba(0,0,0,0.9); }
-        .profile-badge { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 6px; border: 1px solid #475569; }
-        .avatar-box { width: 36px; height: 36px; border: 2px solid #f59e0b; border-radius: 4px; background: linear-gradient(135deg, #7c3aed, #1e1b4b); display: flex; justify-content: center; align-items: center; font-size: 18px; }
-        
-        .resources-bar { display: flex; gap: 5px; }
-        .res-pill { background: rgba(0,0,0,0.8); border: 1px solid #d97706; padding: 3px 7px; border-radius: 12px; font-weight: bold; display: flex; align-items: center; gap: 3px; font-size: 10px; color: #fef08a; box-shadow: inset 0 0 5px rgba(0,0,0,0.9); }
+        .top-hud { background: linear-gradient(180deg, #1e293b, #0f172a); display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 2px solid #b45309; z-index: 20; font-size: 11px; }
+        .res-pill { background: rgba(0,0,0,0.85); border: 1px solid #d97706; padding: 4px 8px; border-radius: 12px; font-weight: bold; color: #fef08a; font-size: 10px; }
 
-        /* ANA EKRAN KAPSAYICISI */
-        .viewport { flex: 1; position: relative; background: radial-gradient(circle at center, #1e1b4b 0%, #030509 95%); overflow: hidden; }
-        .castle-texture { position: absolute; width:100%; height:100%; top:0; left:0; background: radial-gradient(circle at 50% 30%, rgba(245,158,11,0.15) 0%, transparent 75%); pointer-events: none; }
-
-        .screen { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; padding: 12px; box-sizing: border-box; overflow-y: auto; }
+        .viewport { flex: 1; position: relative; background: #050811; overflow: hidden; }
+        .screen { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; padding: 12px; box-sizing: border-box; overflow-y: auto; z-index: 5; }
         .screen.active { display: flex; flex-direction: column; }
 
-        /* KALE BASTION HARİTASI */
-        .bastion-area { position: relative; width: 100%; height: 100%; }
-        .building-pin { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.2s; }
-        .building-pin:active { transform: translate(-50%, -50%) scale(0.9); }
+        /* HERO TAVERN & DATA VIEW */
+        .tavern-wrapper { display: flex; height: 100%; gap: 10px; }
+        .hero-sidebar { width: 120px; background: rgba(15,23,42,0.95); border-right: 2px solid #334155; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding: 4px; border-radius: 6px; }
+        .hero-card-thumb { height: 60px; background: #1e293b; border: 2px solid #22c55e; border-radius: 6px; cursor: pointer; font-size: 9px; background-size: cover; background-position: center; position: relative; }
+        .hero-card-thumb.active { border-color: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+        .hero-thumb-overlay { position: absolute; bottom:0; left:0; width:100%; background: rgba(0,0,0,0.8); padding: 2px; text-align: center; }
+
+        .hero-detail-view { flex: 1; background: rgba(15,23,42,0.92); border: 1px solid #475569; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; }
         
-        .pin-circle { width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #334155, #0f172a); border: 2px solid #f59e0b; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 0 15px rgba(245,158,11,0.7), inset 0 0 8px rgba(255,255,255,0.3); }
-        .pin-title { background: linear-gradient(180deg, #451a03, #0f172a); border: 1px solid #b45309; color: #fef08a; padding: 2px 6px; border-radius: 6px; font-size: 9px; margin-top: 3px; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 4px #000; }
-
-        #b-gecit { top: 30%; left: 30%; }
-        #b-han { top: 22%; left: 72%; }
-        #b-pazar { top: 55%; left: 50%; }
-
-        /* SAĞ ALT DEVASA SAVAŞ BUTONU */
-        .btn-raid-epic { position: absolute; bottom: 12px; right: 12px; background: linear-gradient(180deg, #dc2626 0%, #7f1d1d 100%); border: 2px solid #fef08a; border-radius: 12px; padding: 12px 22px; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 25px rgba(220,38,38,0.95); cursor: pointer; z-index: 5; }
-        .btn-raid-epic span { color: #fff; font-size: 18px; font-weight: 900; letter-spacing: 1px; text-shadow: 1px 2px 4px #000; }
-
-        /* ŞAMPİYON HANI / ENVANTER (Görsel 1 Tam Uyumlu) */
-        .tavern-wrapper { display: flex; height: 100%; gap: 8px; }
-        .hero-sidebar { width: 110px; background: rgba(15,23,42,0.95); border-right: 2px solid #334155; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding: 4px; border-radius: 6px; }
-        .hero-card-thumb { background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #22c55e; border-radius: 6px; padding: 6px; text-align: center; cursor: pointer; font-size: 9px; }
-        .hero-card-thumb.active { border-color: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
-
-        .hero-detail-view { flex: 1; background: rgba(15,23,42,0.9); border: 1px solid #475569; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; position: relative; }
-        .artifact-matrix { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
-        .art-slot { width: 38px; height: 38px; background: #0f172a; border: 1px solid #f59e0b; border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 16px; box-shadow: inset 0 0 6px rgba(0,0,0,0.8); }
-
-        /* ÇAĞIRMA GEÇİDİ (Görsel 2 Parça Seçenekleri) */
-        .portal-wrapper { display: flex; height: 100%; gap: 8px; }
-        .shard-list { width: 140px; background: rgba(15,23,42,0.95); border-right: 2px solid #334155; display: flex; flex-direction: column; gap: 6px; padding: 6px; border-radius: 6px; }
-        .shard-row { background: #1e293b; border: 1px solid #475569; border-radius: 6px; padding: 8px; cursor: pointer; font-size: 9px; text-align: left; }
-        .shard-row.active { border-color: #22c55e; background: #0f172a; }
-
-        /* ORTAK PANELLER & BUTONLAR */
-        .panel-card { background: rgba(15,23,42,0.95); border: 1px solid #b45309; border-radius: 8px; padding: 12px; margin-bottom: 10px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.7); }
-        .btn-action { background: linear-gradient(180deg, #2563eb, #1d4ed8); color: white; border: 1px solid #60a5fa; padding: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 6px; font-size: 12px; box-shadow: 0 3px 6px rgba(0,0,0,0.5); }
-        .btn-action:active { transform: scale(0.97); }
-
-        /* ALT MENÜ (RAID FOOTER) */
-        .bottom-footer { background: #070a14; border-top: 2px solid #b45309; display: flex; justify-content: space-around; align-items: center; padding: 6px 2px; z-index: 20; font-size: 9px; box-shadow: 0 -4px 12px rgba(0,0,0,0.9); }
+        .bottom-footer { background: #070a14; border-top: 2px solid #b45309; display: flex; justify-content: space-around; align-items: center; padding: 6px 2px; z-index: 20; font-size: 9px; }
         .footer-tab { display: flex; flex-direction: column; align-items: center; color: #94a3b8; cursor: pointer; flex: 1; }
-        .footer-tab.active { color: #f59e0b; text-shadow: 0 0 6px rgba(245,158,11,0.7); }
-        .footer-tab span { font-size: 18px; margin-bottom: 2px; }
+        .footer-tab.active { color: #f59e0b; }
     </style>
 </head>
 <body>
 
-    <!-- ÜST BAR -->
     <div class="top-hud">
-        <div class="profile-badge">
-            <div class="avatar-box">👹</div>
-            <div>
-                <b style="color:#fef08a;">zrto99</b><br>
-                <span style="color:#f59e0b; font-size:9px;">Güç: 309.13K</span>
-            </div>
-        </div>
-        <div class="resources-bar">
+        <b>zrto99 (Lvl 47)</b>
+        <div style="display:flex; gap:6px;">
             <div class="res-pill">⚡ 86/100</div>
             <div class="res-pill">🪙 2.39M</div>
             <div class="res-pill">💎 19</div>
         </div>
     </div>
 
-    <!-- ANA İÇERİK VIEWPORT -->
     <div class="viewport">
-        <div class="castle-texture"></div>
-
-        <!-- 1. BASTION KALE EKRANI -->
-        <div id="screen-base" class="screen active">
-            <div class="bastion-area">
-                <div class="building-pin" id="b-gecit" onclick="openScreen('screen-portal')">
-                    <div class="pin-circle">🏛️</div>
-                    <div class="pin-title">Geçit</div>
-                </div>
-                <div class="building-pin" id="b-han" onclick="openScreen('screen-tavern')">
-                    <div class="pin-circle">🏰</div>
-                    <div class="pin-title">Han</div>
-                </div>
-                <div class="building-pin" id="b-pazar" onclick="openScreen('screen-market')">
-                    <div class="pin-circle">🛒</div>
-                    <div class="pin-title">Pazar</div>
-                </div>
-
-                <div class="btn-raid-epic" onclick="openScreen('screen-battle')">
-                    <span style="font-size:22px;">⚔️</span>
-                    <span>SAVAŞ</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. ÇAĞIRMA GEÇİDİ (Görsel 2 Birebir) -->
-        <div id="screen-portal" class="screen">
-            <h3 style="color:#22c55e; margin-bottom:8px; font-size:13px;">🔮 Çağırma Geçidi</h3>
-            <div class="portal-wrapper">
-                <div class="shard-list">
-                    <div class="shard-row active">🟢 <b>Gizemli Parça</b><br><span style="font-size:7px; color:#94a3b8;">125 Adet</span></div>
-                    <div class="shard-row">🔵 Antik Parça</div>
-                    <div class="shard-row">🟣 Hiçlik Parçası</div>
-                    <div class="shard-row">🔴 İlkel Parça</div>
-                    <div class="shard-row">🟡 Kutsal Parça</div>
-                </div>
-                <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
-                    <div style="font-size:60px; filter:drop-shadow(0 0 12px #22c55e);">💎</div>
-                    <div style="font-weight:bold; font-size:11px; margin:8px 0;" id="portal-status">Parça ile Şampiyon Çağır</div>
-                    <div style="display:flex; gap:6px; width:100%;">
-                        <button class="btn-action" style="background:linear-gradient(180deg,#d97706,#b45309);" onclick="doSummon(1)">500 🪙 Çağır</button>
-                        <button class="btn-action" style="background:linear-gradient(180deg,#d97706,#b45309);" onclick="doSummon(10)">5K 🪙 x10 Çağır</button>
-                    </div>
-                </div>
-            </div>
-            <button class="btn-action" style="background:#475569; margin-top:8px;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
-        </div>
-
-        <!-- 3. KAHRAMAN HANI / ENVANTER (Görsel 1 Birebir) -->
-        <div id="screen-tavern" class="screen">
+        <!-- ŞAMPİYONLAR EKRANI -->
+        <div id="screen-tavern" class="screen active">
+            <h3 style="color:#f59e0b; margin-bottom:8px; font-size:13px;">🛡️ Kahraman Veritabanı (Han)</h3>
             <div class="tavern-wrapper">
-                <div class="hero-sidebar">
-                    <div class="hero-card-thumb active">
-                        <div style="font-size:20px;">🧝‍♀️</div>
-                        <b>Dorothy</b><br><span style="color:#f59e0b;">★ 60</span>
-                    </div>
-                    <div class="hero-card-thumb">
-                        <div style="font-size:20px;">🥷</div>
-                        <b>Khafre</b><br><span style="color:#94a3b8;">★ 60</span>
-                    </div>
+                <div class="hero-sidebar" id="hero-list-container">
+                    <!-- JSON'dan yüklenen şampiyonlar buraya gelecek -->
                 </div>
-                <div class="hero-detail-view">
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        <div style="font-size:46px;">🧝‍♀️</div>
-                        <div>
-                            <b style="color:#f59e0b; font-size:11px;">60. Svy. Dorothy Gale</b><br>
-                            <span style="font-size:9px; color:#38bdf8;">Efsanevi • Destek (Güç: 78.512)</span>
-                        </div>
-                    </div>
-                    <div style="font-size:9px; margin-top:8px; background:rgba(0,0,0,0.6); padding:8px; border-radius:6px; line-height:1.4;">
-                        <b>Toplam İstatistikler:</b><br>
-                        HP: 22.800 | ATK: 837 | DEF: 1.222 | HIZ: 109
-                    </div>
-                    <div class="artifact-matrix">
-                        <div class="art-slot">⚔️</div>
-                        <div class="art-slot">🛡️</div>
-                        <div class="art-slot">💍</div>
-                        <div class="art-slot">📿</div>
-                        <div class="art-slot">📜</div>
-                        <div class="art-slot">🛡️</div>
-                    </div>
+                <div class="hero-detail-view" id="hero-detail-container">
+                    <p style="color:#94a3b8;">Şampiyon yükleniyor...</p>
                 </div>
             </div>
-            <button class="btn-action" style="background:#475569; margin-top:8px;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
         </div>
-
-        <!-- 4. SAVAŞ ALANI -->
-        <div id="screen-battle" class="screen">
-            <h3 style="color:#ef4444; margin-bottom:8px; font-size:13px;">⚔️ Kampanya Savaş Alanı</h3>
-            <div class="panel-card">
-                <b>🛡️ Dorothy (Lvl 60)</b> - Can: <span id="p-hp">100</span>/100
-                <div style="background:#020617; height:8px; border-radius:4px; margin-top:4px; overflow:hidden; border:1px solid #334155;"><div id="p-bar" style="width:100%; height:100%; background:#22c55e;"></div></div>
-            </div>
-            <div class="panel-card">
-                <b>👹 Vahşi Ork (Boss)</b> - Can: <span id="e-hp">180</span>/180
-                <div style="background:#020617; height:8px; border-radius:4px; margin-top:4px; overflow:hidden; border:1px solid #334155;"><div id="e-bar" style="width:100%; height:100%; background:#ef4444;"></div></div>
-            </div>
-            <button class="btn-action" style="background:linear-gradient(180deg,#dc2626,#991b1b);" onclick="doBattle()">⚔️ Saldır (-10 ⚡)</button>
-            <button class="btn-action" style="background:#475569;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
-            <div id="battle-log" style="margin-top:8px; font-size:10px; color:#fde047;">Savaşa hazırsın!</div>
-        </div>
-
-        <!-- 5. PAZAR EKRANI -->
-        <div id="screen-market" class="screen">
-            <h3 style="color:#10b981; margin-bottom:8px; font-size:13px;">🛒 Pazar Tüccarı</h3>
-            <div class="panel-card" style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:11px;">⚡ +50 Enerji Paketi</span>
-                <button class="btn-action" style="width:auto; padding:6px 12px; background:#10b981;" onclick="buyEnergy()">100K 🪙</button>
-            </div>
-            <button class="btn-action" style="background:#475569; margin-top:8px;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
-        </div>
-
     </div>
 
-    <!-- ALT MENÜ (RAID FOOTER) -->
     <div class="bottom-footer">
-        <div class="footer-tab" onclick="openScreen('screen-market')"><span>🛒</span>Dükkan</div>
-        <div class="footer-tab" onclick="alert('Vazifeler aktif!')"><span>📜</span>Vazifeler</div>
-        <div class="footer-tab" onclick="alert('Görevler aktif!')"><span>🎯</span>Görevler</div>
-        <div class="footer-tab active" onclick="openScreen('screen-base')"><span>🏰</span>Kale</div>
-        <div class="footer-tab" onclick="openScreen('screen-tavern')"><span>🛡️</span>Şampiyonlar</div>
+        <div class="footer-tab active" onclick="openScreen('screen-tavern')"><span>🛡️</span>Şampiyonlar</div>
     </div>
 
     <script>
-        let energy = 86, maxEnergy = 100;
-        let gold = 2390000;
-        let gem = 19;
-        let pHp = 100, pMaxHp = 100;
-        let eHp = 180, eMaxHp = 180;
+        let allHeroes = [];
 
-        function updateUI() {
-            document.getElementById('p-hp').innerText = pHp;
-            document.getElementById('e-hp').innerText = eHp;
-            document.getElementById('p-bar').style.width = (pHp / pMaxHp) * 100 + '%';
-            document.getElementById('e-bar').style.width = (eHp / eMaxHp) * 100 + '%';
+        // heroes.json dosyasından veri çekme fonksiyonu
+        async function loadHeroData() {
+            try {
+                const response = await fetch('heroes.json');
+                allHeroes = await response.json();
+                renderHeroList();
+            } catch (e) {
+                console.error("Veri yüklenemedi:", e);
+                document.getElementById('hero-detail-container').innerHTML = `<p style="color:#ef4444;">Veriler yüklenirken hata oluştu!</p>`;
+            }
+        }
+
+        function renderHeroList() {
+            const listContainer = document.getElementById('hero-list-container');
+            listContainer.innerHTML = '';
+
+            allHeroes.forEach((hero, index) => {
+                const card = document.createElement('div');
+                card.className = `hero-card-thumb ${index === 0 ? 'active' : ''}`;
+                card.style.backgroundImage = `url('${hero.avatar}')`;
+                card.innerHTML = `<div class="hero-thumb-overlay"><b>${hero.name}</b></div>`;
+                card.onclick = () => selectHero(index);
+                listContainer.appendChild(card);
+            });
+
+            if (allHeroes.length > 0) selectHero(0);
+        }
+
+        function selectHero(index) {
+            document.querySelectorAll('.hero-card-thumb').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+            });
+
+            const hero = allHeroes[index];
+            const detailContainer = document.getElementById('hero-detail-container');
+
+            detailContainer.innerHTML = `
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <img src="${hero.avatar}" style="width:70px; height:70px; border-radius:6px; border:2px solid #f59e0b; object-fit: cover;">
+                    <div>
+                        <b style="color:#f59e0b; font-size:12px;">${hero.title}</b><br>
+                        <span style="font-size:9px; color:#38bdf8;">${hero.rarity} • ${hero.type}</span><br>
+                        <span style="font-size:9px; color:#fef08a;">Güç: ${hero.power.toLocaleString()}</span>
+                    </div>
+                </div>
+                <div style="font-size:10px; margin-top:10px; background:rgba(0,0,0,0.6); padding:8px; border-radius:6px; line-height:1.5;">
+                    <b>HP:</b> ${hero.stats.hp} | <b>ATK:</b> ${hero.stats.atk}<br>
+                    <b>DEF:</b> ${hero.stats.def} | <b>HIZ:</b> ${hero.stats.speed}
+                </div>
+            `;
         }
 
         function openScreen(id) {
@@ -229,42 +119,7 @@
             document.getElementById(id).classList.add('active');
         }
 
-        function doSummon(count) {
-            let cost = count === 1 ? 500 : 5000;
-            if (gold >= cost) {
-                gold -= cost;
-                document.getElementById('portal-status').innerHTML = `🎉 Başarıyla ${count} Şampiyon Çağrıldı!`;
-            } else {
-                document.getElementById('portal-status').innerText = "❌ Yetersiz Gümüş!";
-            }
-        }
-
-        function doBattle() {
-            if (pHp <= 0 || eHp <= 0) return;
-            eHp = Math.max(0, eHp - 45);
-            document.getElementById('battle-log').innerText = "Düşmana 45 hasar verildi!";
-            if (eHp === 0) {
-                document.getElementById('battle-log').innerText = "🎉 Zafer Kazandın!";
-            } else {
-                setTimeout(() => {
-                    pHp = Math.max(0, pHp - 15);
-                    updateUI();
-                }, 400);
-            }
-            updateUI();
-        }
-
-        function buyEnergy() {
-            if (gold >= 100000) {
-                gold -= 100000;
-                energy = Math.min(maxEnergy, energy + 50);
-                alert("⚡ Enerji yenilendi!");
-            } else {
-                alert("❌ Yetersiz Gümüş!");
-            }
-        }
-
-        updateUI();
+        loadHeroData();
     </script>
 </body>
 </html>
