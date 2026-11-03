@@ -3,505 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Raid: Shadow RPG - Ultimate Edition</title>
+    <title>Raid: Shadow Legends - Pro Edition</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'Arial Black', Roboto, sans-serif; }
-        body { background-color: #030712; color: #fff; height: 100vh; overflow: hidden; display: flex; flex-direction: column; perspective: 1000px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #0b0f19; color: #f8fafc; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* ÜST BAR */
-        .top-hud { background: linear-gradient(180deg, #1e1b4b 0%, rgba(15, 23, 42, 0.95) 100%); display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 2px solid #f59e0b; z-index: 20; box-shadow: 0 4px 15px rgba(0,0,0,0.9); }
-        .profile-section { display: flex; align-items: center; gap: 8px; }
-        .avatar-frame { width: 40px; height: 40px; border: 2px solid #fbbf24; border-radius: 8px; background: radial-gradient(circle, #7c3aed, #1e1b4b); display: flex; justify-content: center; align-items: center; font-size: 20px; box-shadow: 0 0 10px #f59e0b; }
-        .user-info { display: flex; flex-direction: column; text-align: left; }
-        .user-name { color: #fef08a; font-size: 11px; font-weight: bold; }
-        .power-tag { color: #f59e0b; font-size: 9px; font-weight: bold; text-shadow: 0 0 3px #000; }
+        /* ÜST BAR (RAID ORİJİNAL) */
+        .top-hud { background: linear-gradient(180deg, #1e293b, #0f172a); display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 2px solid #334155; font-size: 11px; z-index: 10; }
+        .res-group { display: flex; gap: 6px; align-items: center; }
+        .res-pill { background: rgba(0,0,0,0.5); border: 1px solid #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; display: flex; align-items: center; gap: 4px; }
 
-        .resources-group { display: flex; gap: 4px; }
-        .res-badge { background: rgba(0, 0, 0, 0.8); border: 1px solid #d97706; border-radius: 10px; padding: 3px 6px; display: flex; align-items: center; gap: 3px; font-size: 10px; font-weight: bold; color: #fff; }
+        /* ANA EKRAN KAPSAYICISI */
+        .viewport { flex: 1; position: relative; background: #050811; overflow: hidden; display: flex; flex-direction: column; }
+        .screen { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; padding: 10px; box-sizing: border-box; overflow-y: auto; }
+        .screen.active { display: flex; flex-direction: column; }
 
-        /* VİEWPORT & 3D KALE HARİTASI */
-        .viewport { flex: 1; position: relative; background: radial-gradient(circle at 50% 40%, #2e1065 0%, #030712 90%); overflow: hidden; transform-style: preserve-3d; }
-        #particle-canvas { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 2; }
+        /* KALE (BASTION) HARİTASI */
+        .bastion-container { flex: 1; position: relative; background: radial-gradient(circle at center, #1e1b4b 0%, #020617 100%); }
+        .building-node { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .node-circle { width: 60px; height: 60px; border-radius: 50%; background: #1e293b; border: 2px solid #f59e0b; display: flex; justify-content: center; align-items: center; font-size: 26px; box-shadow: 0 0 15px rgba(245,158,11,0.5); }
+        .node-label { background: rgba(0,0,0,0.8); border: 1px solid #78350f; color: #fef08a; padding: 2px 8px; border-radius: 8px; font-size: 10px; margin-top: 4px; font-weight: bold; }
 
-        .screen { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; padding: 15px; box-sizing: border-box; z-index: 3; overflow-y: auto; }
-        .screen.active { display: block; }
+        #b-gecit { top: 35%; left: 35%; }
+        #b-han { top: 35%; left: 65%; }
+        #b-pazar { top: 65%; left: 50%; }
 
-        .bastion-map { position: relative; width: 100%; height: 100%; transform: rotateX(5deg); }
+        /* SAVAŞ BUTONU */
+        .btn-battle-huge { position: absolute; bottom: 15px; right: 15px; background: linear-gradient(180deg, #dc2626, #991b1b); border: 2px solid #fef08a; border-radius: 12px; padding: 12px 22px; font-size: 18px; font-weight: 900; color: #fff; box-shadow: 0 0 20px rgba(220,38,38,0.8); cursor: pointer; z-index: 5; }
 
-        .node-building { position: absolute; transform: translate(-50%, -50%) translateZ(20px); display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.2s ease; }
-        .node-building:active { transform: translate(-50%, -50%) scale(0.9) translateZ(10px); }
+        /* ŞAMPİYON HANI / ENVANTER (Görsel 1 Uyumlu) */
+        .tavern-layout { display: flex; height: 100%; gap: 10px; }
+        .champ-sidebar { width: 110px; background: #0f172a; border-right: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding: 5px; }
+        .champ-thumb { background: #1e293b; border: 2px solid #22c55e; border-radius: 6px; padding: 6px; text-align: center; cursor: pointer; font-size: 10px; }
+        .champ-thumb.active { border-color: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
 
-        .node-aura { width: 62px; height: 62px; border-radius: 50%; background: radial-gradient(circle, rgba(245,158,11,0.6) 0%, rgba(0,0,0,0.9) 75%); border: 2px solid #f59e0b; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 20px rgba(0,0,0,0.8), inset 0 0 10px rgba(255,255,255,0.4); }
-        .node-icon { font-size: 26px; filter: drop-shadow(0 3px 5px #000); }
-        .node-title { background: linear-gradient(180deg, #451a03 0%, #0f172a 100%); border: 1px solid #f59e0b; color: #fef08a; padding: 2px 8px; border-radius: 8px; font-size: 10px; margin-top: 4px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.8); white-space: nowrap; }
+        .champ-main-view { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; text-align: center; }
+        .champ-stats-panel { width: 140px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px; font-size: 9px; text-align: left; position: absolute; right: 0; top: 0; }
+        .artifact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 5px; }
+        .artifact-slot { width: 32px; height: 32px; background: #1e293b; border: 1px solid #f59e0b; border-radius: 4px; display: flex; justify-content: center; align-items: center; font-size: 14px; }
 
-        #building-gecit { top: 28%; left: 30%; }
-        #building-han { top: 20%; left: 72%; }
-        #building-pazar { top: 52%; left: 48%; }
-        #building-sunak { top: 68%; left: 75%; }
-        #building-salon { top: 18%; left: 50%; }
+        /* ÇAĞIRMA GEÇİDİ (Görsel 2 Uyumlu) */
+        .portal-layout { display: flex; height: 100%; gap: 10px; }
+        .shard-sidebar { width: 140px; background: #0f172a; border-right: 1px solid #334155; display: flex; flex-direction: column; gap: 6px; padding: 5px; overflow-y: auto; }
+        .shard-item { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 8px; cursor: pointer; text-align: left; font-size: 10px; }
+        .shard-item.active { border-color: #22c55e; background: #1e293b; }
+        
+        .portal-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .shard-display { font-size: 64px; margin-bottom: 10px; filter: drop-shadow(0 0 15px #22c55e); }
+        
+        .portal-buttons { display: flex; gap: 10px; margin-top: 15px; width: 100%; max-width: 300px; }
+        .portal-btn { flex: 1; background: linear-gradient(180deg, #d97706, #b45309); border: 1px solid #fef08a; border-radius: 8px; padding: 10px; color: #fff; font-weight: bold; font-size: 11px; cursor: pointer; }
 
-        /* KENAR BİNERLERİ */
-        .side-banner { position: absolute; display: flex; flex-direction: column; gap: 12px; z-index: 5; }
-        .side-left { top: 15%; left: 10px; }
-        .side-right { top: 15%; right: 10px; }
-        .banner-item { width: 42px; height: 42px; background: rgba(15, 23, 42, 0.9); border: 1px solid #38bdf8; border-radius: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.6); cursor: pointer; position: relative; }
-        .banner-label { font-size: 7px; color: #e0f2fe; margin-top: 1px; font-weight: bold; }
-        .badge-red { position: absolute; top: -3px; right: -3px; background: #ef4444; color: #fff; font-size: 8px; padding: 1px 4px; border-radius: 10px; border: 1px solid #fff; }
+        /* PAZAR & SAVAŞ */
+        .panel-box { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px; margin-bottom: 10px; text-align: left; }
+        .action-btn { background: #3b82f6; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 5px; }
 
-        /* SAVAŞ BUTONU 3D */
-        .btn-raid-battle { position: absolute; bottom: 14px; right: 12px; background: linear-gradient(180deg, #dc2626 0%, #7f1d1d 100%); border: 2px solid #fef08a; border-radius: 12px; padding: 10px 18px; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 25px rgba(220, 38, 38, 0.9); cursor: pointer; z-index: 10; transform: translateZ(30px); }
-        .btn-raid-battle:active { transform: scale(0.94) translateZ(10px); }
-        .btn-raid-battle span { color: #fff; font-size: 18px; font-weight: 900; letter-spacing: 1px; text-shadow: 1px 2px 4px #000; }
-
-        /* ORTAK KARTLAR & LİSTELER */
-        .card-box { background: rgba(15, 23, 42, 0.95); border: 1px solid #f59e0b; border-radius: 10px; padding: 12px; margin-bottom: 12px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .hp-bar-bg { background: #020617; border-radius: 4px; height: 12px; width: 100%; margin-top: 6px; overflow: hidden; border: 1px solid #334155; }
-        .hp-bar-fill { height: 100%; background: linear-gradient(90deg, #16a34a, #22c55e); transition: width 0.35s ease-out; }
-        .enemy-fill { background: linear-gradient(90deg, #dc2626, #ef4444); }
-
-        .action-btn { background: #2563eb; color: #fff; border: 1px solid #60a5fa; padding: 12px; font-weight: bold; border-radius: 6px; font-size: 12px; cursor: pointer; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
-        .action-btn:active { transform: scale(0.97); }
-
-        .damage-popup { position: absolute; font-size: 20px; font-weight: 900; text-shadow: 2px 2px 4px #000; animation: floatUp 0.8s ease-out forwards; pointer-events: none; z-index: 100; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 50% { transform: translateY(-25px) scale(1.2); } 100% { opacity: 0; transform: translateY(-45px) scale(1); } }
-
-        /* GÖREVLER / VAZİFELER STİLİ */
-        .quest-item { background: rgba(30, 41, 59, 0.8); border: 1px solid #475569; border-radius: 8px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; text-align: left; }
-
-        /* ALT MENÜ BAR */
-        .bottom-hud { background: #090d16; border-top: 2px solid #f59e0b; display: flex; justify-content: space-around; align-items: center; padding: 6px 4px; z-index: 20; box-shadow: 0 -4px 15px rgba(0,0,0,0.9); }
-        .hud-btn { display: flex; flex-direction: column; align-items: center; color: #94a3b8; font-size: 9px; flex: 1; cursor: pointer; }
-        .hud-btn.active { color: #f59e0b; }
-        .hud-btn .icon { font-size: 18px; margin-bottom: 2px; }
+        /* ALT MENÜ BAR (RAID FOOTER) */
+        .bottom-hud { background: #0f172a; border-top: 2px solid #f59e0b; display: flex; justify-content: space-around; align-items: center; padding: 6px 4px; z-index: 10; font-size: 10px; }
+        .hud-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; cursor: pointer; flex: 1; }
+        .hud-item.active { color: #f59e0b; }
+        .hud-item span { font-size: 16px; margin-bottom: 2px; }
     </style>
 </head>
 <body>
 
     <!-- ÜST BAR -->
     <div class="top-hud">
-        <div class="profile-section">
-            <div class="avatar-frame">👹</div>
-            <div class="user-info">
-                <span class="user-name">zrto99 (Lvl 47)</span>
-                <span class="power-tag">Güç: 309.13K</span>
-            </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+            <div style="width:30px; height:30px; background:#7c3aed; border:1px solid #f59e0b; border-radius:4px; display:flex; justify-content:center; align-items:center;">👹</div>
+            <b>zrto99</b>
         </div>
-        <div class="resources-group">
-            <div class="res-badge">⚡ <span id="res-energy">154/117</span></div>
-            <div class="res-badge">🪙 <span id="res-gold">2.39M</span></div>
-            <div class="res-badge">💎 <span id="res-gem">77</span></div>
+        <div class="res-group">
+            <div class="res-pill">⚡ <span id="res-energy">86/100</span></div>
+            <div class="res-pill">🪙 <span id="res-gold">2.39M</span></div>
+            <div class="res-pill">💎 <span id="res-gem">19</span></div>
         </div>
     </div>
 
-    <!-- ANA İÇERİK & 3D VIEWPORT -->
+    <!-- VIEWPORT EKRANLARI -->
     <div class="viewport">
-        <canvas id="particle-canvas"></canvas>
 
-        <!-- 1. BASTION KALE HARİTASI -->
+        <!-- 1. KALE (BASTION) -->
         <div id="screen-base" class="screen active">
-            <div class="side-banner side-left">
-                <div class="banner-item" onclick="playSound('click'); openScreen('screen-tournaments')">
-                    🏆
-                    <span class="banner-label">Turnuva</span>
-                    <span class="badge-red">25</span>
+            <div class="bastion-container">
+                <div class="building-node" id="b-gecit" onclick="openScreen('screen-portal')">
+                    <div class="node-circle">🏛️</div>
+                    <div class="node-label">Geçit</div>
                 </div>
-                <div class="banner-item" onclick="playSound('click'); openScreen('screen-quests')">
-                    📜
-                    <span class="banner-label">Vazifeler</span>
+                <div class="building-node" id="b-han" onclick="openScreen('screen-tavern')">
+                    <div class="node-circle">🏰</div>
+                    <div class="node-label">Han</div>
                 </div>
-            </div>
-
-            <div class="side-banner side-right">
-                <div class="banner-item" onclick="playSound('click'); openScreen('screen-missions')">
-                    🎯
-                    <span class="banner-label">Görevler</span>
-                </div>
-                <div class="banner-item" onclick="playSound('click'); alert('Maden Üretimi: +15 Yakut toplandı!')">
-                    💎
-                    <span class="banner-label">Maden</span>
-                </div>
-            </div>
-
-            <div class="bastion-map">
-                <div class="node-building" id="building-gecit" onclick="openScreen('screen-portal')">
-                    <div class="node-aura"><span class="node-icon">🏛️</span></div>
-                    <div class="node-title">Geçit</div>
+                <div class="building-node" id="b-pazar" onclick="openScreen('screen-market')">
+                    <div class="node-circle">🛒</div>
+                    <div class="node-label">Pazar</div>
                 </div>
 
-                <div class="node-building" id="building-han" onclick="openScreen('screen-tavern')">
-                    <div class="node-aura"><span class="node-icon">🏰</span></div>
-                    <div class="node-title">Han</div>
-                </div>
-
-                <div class="node-building" id="building-pazar" onclick="openScreen('screen-market')">
-                    <div class="node-aura"><span class="node-icon">🛒</span></div>
-                    <div class="node-title">Pazar</div>
-                </div>
-
-                <div class="node-building" id="building-sunak" onclick="openScreen('screen-base')">
-                    <div class="node-aura"><span class="node-icon">🔮</span></div>
-                    <div class="node-title">Ruh Sunağı</div>
-                </div>
-
-                <div class="node-building" id="building-salon" onclick="openScreen('screen-base')">
-                    <div class="node-aura"><span class="node-icon">👑</span></div>
-                    <div class="node-title">Büyük Salon</div>
-                </div>
-
-                <div class="btn-raid-battle" onclick="openScreen('screen-battle')">
-                    <span style="font-size:22px;">⚔️</span>
-                    <span>SAVAŞ</span>
-                </div>
+                <div class="btn-battle-huge" onclick="openScreen('screen-battle')">⚔️ SAVAŞ</div>
             </div>
         </div>
 
-        <!-- 2. SAVAŞ EKRANI -->
-        <div id="screen-battle" class="screen">
-            <h3 style="color:#ef4444; margin-bottom: 10px;">SAVAŞ ALANI (Aşama <span id="stage-num">1</span>)</h3>
-            
-            <div class="card-box" id="player-card">
-                <div>🛡️ <b>Şövalye</b> - Can: <span id="p-hp">100</span>/100</div>
-                <div class="hp-bar-bg"><div id="p-bar" class="hp-bar-fill"></div></div>
-            </div>
-
-            <div class="card-box" id="enemy-card">
-                <div>👹 <b id="e-name">Vahşi Ork</b> - Can: <span id="e-hp">80</span>/<span id="e-max-hp">80</span></div>
-                <div class="hp-bar-bg"><div id="e-bar" class="hp-bar-fill enemy-fill"></div></div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
-                <button class="action-btn" style="background:#dc2626;" onclick="attack()">⚔️ Saldır (-10⚡)</button>
-                <button class="action-btn" style="background:#7c3aed;" onclick="specialAttack()">🔥 Özel Vuruş</button>
-                <button class="action-btn" style="background:#059669;" onclick="heal()">🧪 İyileş</button>
-                <button class="action-btn" style="background:#475569;" onclick="openScreen('screen-base')">⬅️ Çıkış</button>
-            </div>
-            <div id="battle-log" style="margin-top: 15px; font-size: 11px; color: #fde047;">Düşmanla yüzleşmeye hazırsın!</div>
-        </div>
-
-        <!-- 3. GEÇİT (ÇAĞIRMA) EKRANI -->
+        <!-- 2. ÇAĞIRMA GEÇİDİ (Görsel 2 Birebir) -->
         <div id="screen-portal" class="screen">
-            <h2 style="color:#a855f7; margin-bottom: 10px;">ÇAĞIRMA GEÇİDİ</h2>
-            <p style="font-size: 11px; margin-bottom: 15px;">Kadim kristalleri kullanarak efsanevi şampiyonlar çağır!</p>
-            <button class="action-btn" style="background:#8b5cf6; margin-bottom: 10px;" onclick="summon('blue')">🔮 Mavi Kristal Çağır (500 🪙)</button>
-            <button class="action-btn" style="background:#d97706;" onclick="summon('sacred')">🌟 Kutsal Kristal Çağır (50 💎)</button>
-            <div id="summon-result" class="card-box" style="margin-top:15px; text-align:center; color:#22c55e;">Henüz çağrı yapılmadı.</div>
-            <button class="action-btn" style="background:#475569; margin-top:15px;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
+            <h3 style="color:#22c55e; margin-bottom:5px;">Çağırma Geçidi</h3>
+            <div class="portal-layout">
+                <div class="shard-sidebar">
+                    <div class="shard-item active">🟢 <b>Gizemli Parça</b><br><span style="font-size:8px; color:#94a3b8;" id="shard-count">125 Adet</span></div>
+                    <div class="shard-item">🔵 Antik Parça</div>
+                    <div class="shard-item">🟣 Hiçlik Parçası</div>
+                    <div class="shard-item">🔴 İlkel Parça</div>
+                    <div class="shard-item">🟡 Kutsal Parça</div>
+                </div>
+                <div class="portal-center">
+                    <div class="shard-display">💎</div>
+                    <div style="font-weight:bold; font-size:13px;" id="summon-msg">Gizemli Parça ile Şampiyon Çağır</div>
+                    <div class="portal-buttons">
+                        <button class="portal-btn" onclick="summonShard(1)">500 🪙<br>Çağır</button>
+                        <button class="portal-btn" onclick="summonShard(10)">5.000 🪙<br>Çağır x10</button>
+                    </div>
+                </div>
+            </div>
+            <button class="action-btn" style="background:#475569; margin-top:10px;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
         </div>
 
-        <!-- 4. HAN (ŞAMPİYONLAR) EKRANI -->
+        <!-- 3. KAHRAMAN HANI / ENVANTER (Görsel 1 Birebir) -->
         <div id="screen-tavern" class="screen">
-            <h2 style="color:#3b82f6; margin-bottom: 10px;">KAHRAMAN HANI</h2>
-            <div id="hero-collection" style="display: flex; flex-direction: column; gap: 8px;">
-                <div class="quest-item"><span>🛡️ <b>Şövalye</b> (Lvl 47)</span> <span style="color:#f59e0b;">[Efsanevi Lider]</span></div>
+            <div class="tavern-layout">
+                <div class="champ-sidebar">
+                    <div class="champ-thumb active">
+                        <div style="font-size:20px;">🧝‍♀️</div>
+                        <b>Dorothy</b><br><span style="color:#f59e0b;">Lvl 60</span>
+                    </div>
+                    <div class="champ-thumb">
+                        <div style="font-size:20px;">🥷</div>
+                        <b>Khafre</b><br><span style="color:#94a3b8;">Lvl 60</span>
+                    </div>
+                </div>
+                <div class="champ-main-view">
+                    <div style="font-size:64px;">🧝‍♀️</div>
+                    <h3 style="color:#f59e0b; font-size:14px;">60. Svy. Dorothy Gale ★★★★★★</h3>
+                    <p style="font-size:10px; color:#38bdf8;">Efsanevi • Destek • Güç: 78.512</p>
+
+                    <!-- SAĞ İSTATİSTİK & ARTIFACT PANELİ -->
+                    <div class="champ-stats-panel">
+                        <b>Toplam İstatistik</b><br>
+                        HP: 22.800<br>
+                        ATK: 837<br>
+                        DEF: 1.222<br>
+                        HIZ: 109<br>
+                        <div class="artifact-grid">
+                            <div class="artifact-slot">⚔️</div>
+                            <div class="artifact-slot">🛡️</div>
+                            <div class="artifact-slot">💍</div>
+                            <div class="artifact-slot">📿</div>
+                            <div class="artifact-slot">📜</div>
+                            <div class="artifact-slot">🛡️</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button class="action-btn" style="background:#475569; margin-top:20px;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
+            <button class="action-btn" style="background:#475569; margin-top:10px;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
+        </div>
+
+        <!-- 4. SAVAŞ EKRANI -->
+        <div id="screen-battle" class="screen">
+            <h3 style="color:#ef4444; margin-bottom:10px;">Kampanya Savaşı</h3>
+            <div class="panel-box">
+                <b>Şövalye (Lvl 60)</b> - Can: <span id="p-hp">100</span>/100
+                <div style="background:#020617; height:8px; border-radius:4px; margin-top:4px; overflow:hidden;"><div id="p-bar" style="width:100%; height:100%; background:#22c55e;"></div></div>
+            </div>
+            <div class="panel-box">
+                <b>Vahşi Ork (Boss)</b> - Can: <span id="e-hp">180</span>/180
+                <div style="background:#020617; height:8px; border-radius:4px; margin-top:4px; overflow:hidden;"><div id="e-bar" style="width:100%; height:100%; background:#ef4444;"></div></div>
+            </div>
+            <button class="action-btn" style="background:#dc2626;" onclick="fight()">⚔️ Normal Saldırı</button>
+            <button class="action-btn" style="background:#475569;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
+            <div id="b-log" style="margin-top:10px; font-size:11px; color:#fde047;">Savaş başladı!</div>
         </div>
 
         <!-- 5. PAZAR EKRANI -->
         <div id="screen-market" class="screen">
-            <h2 style="color:#10b981; margin-bottom: 10px;">PAZAR TÜCCARI</h2>
-            <div class="quest-item">
-                <span>⚡ <b>+50 Enerji Paketi</b></span>
-                <button class="action-btn" style="background:#10b981; width:auto; padding:6px 12px;" onclick="buyEnergy()">100 🪙</button>
+            <h3 style="color:#10b981; margin-bottom:10px;">Pazar Tüccarı</h3>
+            <div class="panel-box" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>⚡ +50 Enerji</span>
+                <button class="action-btn" style="width:auto; padding:6px 12px;" onclick="buyEnergy()">100 🪙</button>
             </div>
-            <button class="action-btn" style="background:#475569; margin-top:20px;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
-        </div>
-
-        <!-- 6. VAZİFELER EKRANI -->
-        <div id="screen-quests" class="screen">
-            <h2 style="color:#fbbf24; margin-bottom: 10px;">GÜNLÜK VAZİFELER</h2>
-            <div class="quest-item">
-                <div><b>3 Düşman Alt Et</b><br><span style="color:#94a3b8;">Ödül: 1000 🪙</span></div>
-                <button class="action-btn" style="background:#059669; width:auto; padding:6px 10px;" onclick="claimReward(this, 1000)">Topla</button>
-            </div>
-            <div class="quest-item">
-                <div><b>1 Kahraman Çağır</b><br><span style="color:#94a3b8;">Ödül: 10 💎</span></div>
-                <button class="action-btn" style="background:#059669; width:auto; padding:6px 10px;" onclick="claimReward(this, 0)">Topla</button>
-            </div>
-            <button class="action-btn" style="background:#475569; margin-top:20px;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
-        </div>
-
-        <!-- 7. GÖREVLER EKRANI -->
-        <div id="screen-missions" class="screen">
-            <h2 style="color:#38bdf8; margin-bottom: 10px;">İLERLEME GÖREVLERİ</h2>
-            <div class="quest-item">
-                <div><b>Aşama 5'e Ulaş</b><br><span style="color:#94a3b8;">Ödül: 5000 🪙 & 20 💎</span></div>
-                <span style="color:#f59e0b; font-weight:bold;">Devam Ediyor</span>
-            </div>
-            <button class="action-btn" style="background:#475569; margin-top:20px;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
-        </div>
-
-        <!-- 8. TURNUVA EKRANI -->
-        <div id="screen-tournaments" class="screen">
-            <h2 style="color:#ef4444; margin-bottom: 10px;">ARENA TURNUVASI</h2>
-            <div class="quest-item"><span>1. Oyuncu - zrto99</span> <span style="color:#22c55e;">2,450 Puan</span></div>
-            <div class="quest-item"><span>2. Oyuncu - ShadowKnight</span> <span style="color:#94a3b8;">1,920 Puan</span></div>
-            <button class="action-btn" style="background:#475569; margin-top:20px;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
+            <button class="action-btn" style="background:#475569; margin-top:10px;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
         </div>
 
     </div>
 
-    <!-- ALT MENÜ BAR -->
+    <!-- ALT MENÜ BAR (RAID FOOTER) -->
     <div class="bottom-hud">
-        <div class="hud-btn" onclick="playSound('click'); openScreen('screen-market')">
-            <span class="icon">🛒</span>
-            <span>Dükkân</span>
-        </div>
-        <div class="hud-btn" onclick="playSound('click'); openScreen('screen-quests')">
-            <span class="icon">📜</span>
-            <span>Vazifeler</span>
-        </div>
-        <div class="hud-btn" onclick="playSound('click'); openScreen('screen-missions')">
-            <span class="icon">🎯</span>
-            <span>Görevler</span>
-        </div>
-        <div class="hud-btn active" onclick="playSound('click'); openScreen('screen-base')">
-            <span class="icon">🏰</span>
-            <span>Kale</span>
-        </div>
-        <div class="hud-btn" onclick="playSound('click'); openScreen('screen-tavern')">
-            <span class="icon">🛡️</span>
-            <span>Şampiyonlar</span>
-        </div>
+        <div class="hud-item" onclick="openScreen('screen-market')"><span>🛒</span>Dükkan</div>
+        <div class="hud-item" onclick="alert('Vazifeler yakında!')"><span>📜</span>Vazifeler</div>
+        <div class="hud-item" onclick="alert('Görevler yakında!')"><span>🎯</span>Görevler</div>
+        <div class="hud-item active" onclick="openScreen('screen-base')"><span>🏰</span>Kale</div>
+        <div class="hud-item" onclick="openScreen('screen-tavern')"><span>🛡️</span>Şampiyonlar</div>
     </div>
 
     <script>
-        // WEB AUDIO API SES MOTORU
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        let audioCtx = null;
-
-        function playSound(type) {
-            try {
-                if (!audioCtx) audioCtx = new AudioCtx();
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                let now = audioCtx.currentTime;
-
-                if (type === 'click') {
-                    osc.frequency.setValueAtTime(400, now);
-                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.05);
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                    osc.start(now); osc.stop(now + 0.05);
-                } else if (type === 'hit') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(150, now);
-                    osc.frequency.exponentialRampToValueAtTime(30, now + 0.15);
-                    gain.gain.setValueAtTime(0.4, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-                    osc.start(now); osc.stop(now + 0.15);
-                } else if (type === 'crit') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(600, now);
-                    osc.frequency.exponentialRampToValueAtTime(80, now + 0.3);
-                    gain.gain.setValueAtTime(0.5, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                    osc.start(now); osc.stop(now + 0.3);
-                } else if (type === 'heal') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(300, now);
-                    osc.frequency.exponentialRampToValueAtTime(700, now + 0.25);
-                    gain.gain.setValueAtTime(0.3, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-                    osc.start(now); osc.stop(now + 0.25);
-                }
-            } catch (e) {}
-        }
-
-        // OYUN DURUMU
-        let energy = 154, maxEnergy = 117;
+        let energy = 86, maxEnergy = 100;
         let gold = 2390000;
-        let gem = 77;
+        let gem = 19;
+        let shardCount = 125;
 
         let pHp = 100, pMaxHp = 100;
-        let eHp = 80, eMaxHp = 80;
-        let stage = 1;
-        let enemies = ["Vahşi Ork", "Zehirli Goblin", "Gölge Şövalyesi", "Ateş Ejderhası (Boss)"];
-        let heroes = ["🛡️ Şövalye (Lvl 47)"];
+        let eHp = 180, eMaxHp = 180;
 
         function updateUI() {
             document.getElementById('res-energy').innerText = `${energy}/${maxEnergy}`;
             document.getElementById('res-gold').innerText = (gold / 1000000).toFixed(2) + "M";
             document.getElementById('res-gem').innerText = gem;
-
+            document.getElementById('shard-count').innerText = `${shardCount} Adet`;
+            
             document.getElementById('p-hp').innerText = pHp;
             document.getElementById('e-hp').innerText = eHp;
-            document.getElementById('e-max-hp').innerText = eMaxHp;
-            document.getElementById('stage-num').innerText = stage;
-
-            document.getElementById('p-bar').style.width = Math.max(0, (pHp / pMaxHp) * 100) + '%';
-            document.getElementById('e-bar').style.width = Math.max(0, (eHp / eMaxHp) * 100) + '%';
+            document.getElementById('p-bar').style.width = (pHp / pMaxHp) * 100 + '%';
+            document.getElementById('e-bar').style.width = (eHp / eMaxHp) * 100 + '%';
         }
 
-        function openScreen(id) {
-            playSound('click');
+        function openScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+            document.getElementById(screenId).classList.add('active');
         }
 
-        function spawnPopup(text, color, parentId) {
-            let parent = document.getElementById(parentId);
-            let popup = document.createElement('div');
-            popup.className = 'damage-popup';
-            popup.innerText = text;
-            popup.style.color = color;
-            popup.style.left = (Math.random() * 40 + 30) + '%';
-            popup.style.top = '10px';
-            parent.appendChild(popup);
-            setTimeout(() => popup.remove(), 800);
-        }
-
-        function attack() {
-            if (energy < 10) {
-                document.getElementById('battle-log').innerText = "❌ Yetersiz Enerji!";
-                return;
+        function summonShard(count) {
+            let cost = count === 1 ? 500 : 5000;
+            if (gold >= cost && shardCount >= count) {
+                gold -= cost;
+                shardCount -= count;
+                document.getElementById('summon-msg').innerHTML = `🎉 Başarıyla ${count} Şampiyon Çağrıldı!`;
+                updateUI();
+            } else {
+                document.getElementById('summon-msg').innerText = "❌ Yetersiz Gümüş veya Parça!";
             }
+        }
+
+        function fight() {
             if (pHp <= 0 || eHp <= 0) return;
-
-            energy -= 10;
-            let dmg = Math.floor(Math.random() * 15) + 10;
-            eHp -= dmg;
-            playSound('hit');
-            spawnPopup(`-${dmg}`, '#ef4444', 'enemy-card');
-
-            document.getElementById('battle-log').innerText = `Düşmana ${dmg} hasar vuruldu!`;
-
-            if (eHp <= 0) {
-                eHp = 0;
-                gold += 50000;
-                stage++;
-                document.getElementById('battle-log').innerText = `🎉 ZAFER! Aşama ${stage}'e geçildi. +50K Gümüş!`;
-                setTimeout(nextEnemy, 1500);
+            let dmg = 35;
+            eHp = Math.max(0, eHp - dmg);
+            document.getElementById('b-log').innerText = `Düşmana ${dmg} hasar verdin!`;
+            if (eHp === 0) {
+                document.getElementById('b-log').innerText = "🎉 Zafer kazandın!";
             } else {
                 setTimeout(() => {
-                    let eDmg = Math.floor(Math.random() * 10) + 5;
-                    pHp = Math.max(0, pHp - eDmg);
-                    playSound('hit');
-                    spawnPopup(`-${eDmg}`, '#f87171', 'player-card');
+                    pHp = Math.max(0, pHp - 20);
                     updateUI();
                 }, 400);
             }
             updateUI();
         }
 
-        function specialAttack() {
-            if (pHp <= 0 || eHp <= 0) return;
-            let dmg = Math.floor(Math.random() * 25) + 25;
-            eHp = Math.max(0, eHp - dmg);
-            playSound('crit');
-            spawnPopup(`🔥 -${dmg} KRİTİK`, '#fbbf24', 'enemy-card');
-
-            document.getElementById('battle-log').innerText = `🔥 KRİTİK VURUŞ! ${dmg} hasar verildi!`;
-            if (eHp <= 0) setTimeout(nextEnemy, 1500);
-            updateUI();
-        }
-
-        function heal() {
-            if (pHp <= 0) return;
-            let miktar = 35;
-            pHp = Math.min(pMaxHp, pHp + miktar);
-            playSound('heal');
-            spawnPopup(`+${miktar}`, '#22c55e', 'player-card');
-            document.getElementById('battle-log').innerText = "🧪 Can yenilendi!";
-            updateUI();
-        }
-
-        function nextEnemy() {
-            eMaxHp = 80 + (stage * 30);
-            eHp = eMaxHp;
-            let idx = (stage - 1) % enemies.length;
-            document.getElementById('e-name').innerText = enemies[idx];
-            updateUI();
-        }
-
-        function summon(type) {
-            if (type === 'blue' && gold >= 500000) {
-                gold -= 500000;
-            } else if (type === 'sacred' && gem >= 50) {
-                gem -= 50;
-            } else {
-                document.getElementById('summon-result').innerText = "❌ Yetersiz Kaynak!";
-                return;
-            }
-
-            playSound('crit');
-            let pool = ["⭐ Epik Okçu (Lvl 1)", "🌟 Efsanevi Ejder Katili (Lvl 1)", "✨ Nadir Büyücü (Lvl 1)"];
-            let res = pool[Math.floor(Math.random() * pool.length)];
-            heroes.push(res);
-            
-            document.getElementById('summon-result').innerHTML = `🎉 Tebrikler!<br><b style="color:#f59e0b;">${res}</b> kazandın!`;
-            
-            let listHTML = "";
-            heroes.forEach(h => {
-                listHTML += `<div class="quest-item"><span>${h}</span> <span style="color:#22c55e;">[Aktif]</span></div>`;
-            });
-            document.getElementById('hero-collection').innerHTML = listHTML;
-            updateUI();
-        }
-
         function buyEnergy() {
             if (gold >= 100000) {
                 gold -= 100000;
-                energy += 50;
-                playSound('heal');
+                energy = Math.min(maxEnergy, energy + 50);
                 updateUI();
-                alert("⚡ Enerji yenilendi!");
+                alert("⚡ Enerji satın alındı!");
             } else {
                 alert("❌ Yetersiz Gümüş!");
             }
         }
-
-        function claimReward(btn, rewardGold) {
-            gold += rewardGold;
-            gem += 10;
-            playSound('heal');
-            btn.innerText = "Alındı";
-            btn.style.background = "#334155";
-            btn.disabled = true;
-            updateUI();
-        }
-
-        // CANVAS PARÇACIK (SİS) EFEKTİ
-        const canvas = document.getElementById('particle-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        for (let i = 0; i < 25; i++) {
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                radius: Math.random() * 2 + 1,
-                alpha: Math.random() * 0.5 + 0.2,
-                speedY: -Math.random() * 0.4 - 0.1
-            });
-        }
-
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(245, 158, 11, ${p.alpha})`;
-                ctx.fill();
-                p.y += p.speedY;
-                if (p.y < 0) {
-                    p.y = canvas.height;
-                    p.x = Math.random() * canvas.width;
-                }
-            });
-            requestAnimationFrame(animateParticles);
-        }
-        animateParticles();
 
         updateUI();
     </script>
