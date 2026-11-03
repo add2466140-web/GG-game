@@ -1,253 +1,303 @@
-
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raid: Mobil RPG - Ana Üs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Raid: Shadow RPG</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body { background-color: #0b0f19; color: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'Arial Black', Roboto, sans-serif; }
+        body { background-color: #050811; color: #fff; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* Üst Kaynak Barı */
-        .top-bar { background: linear-gradient(180deg, #1e293b, #0f172a); display: flex; justify-content: space-around; padding: 10px; border-bottom: 2px solid #334155; font-size: 13px; font-weight: bold; }
-        .resource-item { display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.4); padding: 5px 10px; border-radius: 20px; border: 1px solid #475569; }
+        /* ÜST BAR (RAID STYLE) */
+        .top-hud { background: linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.6) 100%); display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; border-bottom: 2px solid #b45309; z-index: 10; font-size: 11px; }
+        .profile-section { display: flex; align-items: center; gap: 8px; }
+        .avatar-frame { width: 42px; height: 42px; border: 2px solid #f59e0b; border-radius: 6px; background: #1e293b; display: flex; justify-content: center; align-items: center; font-size: 20px; box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+        .user-info { display: flex; flex-direction: column; align-items: flex-start; }
+        .user-name { color: #f8fafc; font-weight: bold; font-size: 12px; }
+        .power-tag { color: #f59e0b; font-size: 10px; text-shadow: 0 0 3px #000; }
 
-        /* Ana İçerik / Üs Ekranı */
-        .main-container { flex: 1; padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        .resources-group { display: flex; gap: 6px; }
+        .res-badge { background: rgba(0, 0, 0, 0.6); border: 1px solid #d97706; border-radius: 12px; padding: 3px 8px; display: flex; align-items: center; gap: 4px; font-weight: bold; font-size: 11px; }
 
-        /* Ekran Modları (Binalar / Savaş) */
-        .screen { display: none; width: 100%; max-width: 400px; text-align: center; }
+        /* ANA EKRAN / BASTION MAP */
+        .viewport { flex: 1; position: relative; background: radial-gradient(circle at center, #1e1b4b 0%, #020617 100%); overflow: hidden; }
+        
+        .screen { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; padding: 15px; box-sizing: border-box; }
         .screen.active { display: block; }
 
-        /* Ana Üs Binaları Izgarası */
-        .base-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 350px; }
-        .building-card { background: linear-gradient(135deg, #1e293b, #334155); border: 2px solid #f59e0b; border-radius: 12px; padding: 20px 10px; text-align: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .building-card:active { transform: scale(0.95); }
-        .building-icon { font-size: 32px; margin-bottom: 5px; }
-        .building-title { font-size: 15px; font-weight: bold; color: #fecdd3; }
+        /* HARİTA ÜZERİNDEKİ BİNALAR (Dairesel Raid Tarzı) */
+        .bastion-map { position: relative; width: 100%; height: 100%; }
+        
+        .node-building { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .node-icon { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #334155, #0f172a); border: 2px solid #f59e0b; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4), inset 0 0 6px rgba(255,255,255,0.2); }
+        .node-title { background: rgba(0,0,0,0.85); border: 1px solid #78350f; color: #fef08a; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-top: 4px; white-space: nowrap; font-weight: bold; }
 
-        /* Savaş Ekranı Tasarımı */
-        .stats-card { background: #1e293b; border: 1px solid #475569; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-        .bar-container { background: #0f172a; border-radius: 6px; overflow: hidden; height: 12px; margin-top: 6px; }
-        .bar { height: 100%; width: 100%; background: #22c55e; transition: width 0.3s; }
-        .enemy-bar { background: #ef4444; }
+        /* Konumlandırmalar */
+        #building-gecit { top: 30%; left: 35%; }
+        #building-han { top: 22%; left: 70%; }
+        #building-pazar { top: 55%; left: 45%; }
+        #building-sunak { top: 68%; left: 72%; }
+        #building-salon { top: 20%; left: 50%; }
 
-        .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-        button { background: #3b82f6; color: white; border: none; padding: 10px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; }
-        button:active { transform: scale(0.98); }
-        .btn-attack { background: #ef4444; }
-        .btn-special { background: #8b5cf6; }
-        .btn-heal { background: #10b981; }
-        .btn-back { background: #64748b; margin-top: 10px; width: 100%; }
+        /* DEVASA SAĞ ALT SAVAŞ BUTONU */
+        .btn-raid-battle { position: absolute; bottom: 15px; right: 12px; background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%); border: 2px solid #fef08a; border-radius: 10px; padding: 10px 18px; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 15px rgba(220, 38, 38, 0.8); cursor: pointer; z-index: 5; }
+        .btn-raid-battle span { color: #fff; font-size: 18px; font-weight: 900; letter-spacing: 1px; text-shadow: 1px 1px 3px #000; }
 
-        /* Alt Navigasyon Barı */
-        .bottom-bar { background: #0f172a; border-top: 2px solid #334155; display: flex; justify-content: space-around; padding: 8px 0; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #94a3b8; cursor: pointer; }
-        .nav-item.active { color: #f59e0b; }
-        .nav-icon { font-size: 20px; }
+        /* SAVAŞ EKRANI STİLLERİ */
+        .battle-card { background: rgba(30, 41, 59, 0.9); border: 1px solid #f59e0b; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: left; }
+        .hp-bar-bg { background: #0f172a; border-radius: 4px; height: 10px; width: 100%; margin-top: 5px; overflow: hidden; }
+        .hp-bar-fill { height: 100%; background: #22c55e; transition: width 0.3s; }
+        .enemy-fill { background: #ef4444; }
+
+        .battle-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .action-btn { background: #2563eb; color: #fff; border: 1px solid #60a5fa; padding: 12px; font-weight: bold; border-radius: 6px; font-size: 12px; }
+        .action-btn.attack { background: #dc2626; border-color: #fca5a5; }
+        .action-btn.heal { background: #059669; border-color: #6ee7b7; }
+
+        /* ALT MENÜ BAR (RAID FOOTER) */
+        .bottom-hud { background: #0a0f1d; border-top: 2px solid #d97706; display: flex; justify-content: space-between; align-items: center; padding: 6px 4px; z-index: 10; }
+        .hud-btn { display: flex; flex-direction: column; align-items: center; color: #94a3b8; font-size: 9px; flex: 1; cursor: pointer; }
+        .hud-btn.active { color: #f59e0b; }
+        .hud-btn .icon { font-size: 18px; margin-bottom: 2px; }
+
+        .btn-shop-square { background: linear-gradient(180deg, #0284c7, #0369a1); border: 1px solid #38bdf8; color: #fff; font-weight: bold; padding: 6px 12px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; }
     </style>
 </head>
 <body>
 
-    <!-- Üst Kaynak Barı -->
-    <div class="top-bar">
-        <div class="resource-item">⚡ <span id="res-energy">100/100</span></div>
-        <div class="resource-item">🪙 <span id="res-gold">2,500</span></div>
-        <div class="resource-item">💎 <span id="res-gem">15</span></div>
+    <!-- ÜST BAR -->
+    <div class="top-hud">
+        <div class="profile-section">
+            <div class="avatar-frame">👹</div>
+            <div class="user-info">
+                <span class="user-name">zrto99 (Lvl 47)</span>
+                <span class="power-tag">Güç: 309.13K</span>
+            </div>
+        </div>
+        <div class="resources-group">
+            <div class="res-badge">⚡ <span id="res-energy">154/117</span></div>
+            <div class="res-badge">🪙 <span id="res-gold">2.39M</span></div>
+            <div class="res-badge">💎 <span id="res-gem">77</span></div>
+        </div>
     </div>
 
-    <!-- Ana İçerik Ekranları -->
-    <div class="main-container">
+    <!-- ANA İÇERİK (HARİTA / SAVAŞ / PAZAR) -->
+    <div class="viewport">
 
-        <!-- 1. ANA ÜS EKRANI -->
+        <!-- 1. BASTION HARİTA EKRANI -->
         <div id="screen-base" class="screen active">
-            <h2 style="color: #f59e0b; margin-bottom: 20px;">KALE BAŞKENTİ</h2>
-            <div class="base-grid">
-                <div class="building-card" onclick="openScreen('screen-battle')">
-                    <div class="building-icon">⚔️</div>
-                    <div class="building-title">SAVAŞ</div>
+            <div class="bastion-map">
+                <!-- Dairesel Binalar -->
+                <div class="node-building" id="building-gecit" onclick="openScreen('screen-portal')">
+                    <div class="node-icon">🏛️</div>
+                    <div class="node-title">Geçit</div>
                 </div>
-                <div class="building-card" onclick="openScreen('screen-portal')">
-                    <div class="building-icon">🏛️</div>
-                    <div class="building-title">GEÇİT</div>
+
+                <div class="node-building" id="building-han" onclick="openScreen('screen-tavern')">
+                    <div class="node-icon">🏰</div>
+                    <div class="node-title">Han</div>
                 </div>
-                <div class="building-card" onclick="openScreen('screen-tavern')">
-                    <div class="building-icon">🏰</div>
-                    <div class="building-title">HAN</div>
+
+                <div class="node-building" id="building-pazar" onclick="openScreen('screen-market')">
+                    <div class="node-icon">🛒</div>
+                    <div class="node-title">Pazar</div>
                 </div>
-                <div class="building-card" onclick="openScreen('screen-market')">
-                    <div class="building-icon">🛒</div>
-                    <div class="building-title">PAZAR</div>
+
+                <div class="node-building" id="building-sunak">
+                    <div class="node-icon">🔮</div>
+                    <div class="node-title">Ruh Sunağı</div>
+                </div>
+
+                <div class="node-building" id="building-salon">
+                    <div class="node-icon">🏆</div>
+                    <div class="node-title">Büyük Salon</div>
+                </div>
+
+                <!-- Sağ Alt Devasa SAVAŞ Butonu -->
+                <div class="btn-raid-battle" onclick="openScreen('screen-battle')">
+                    <span style="font-size:22px;">⚔️</span>
+                    <span>SAVAŞ</span>
                 </div>
             </div>
         </div>
 
         <!-- 2. SAVAŞ EKRANI -->
         <div id="screen-battle" class="screen">
-            <h3 style="color: #ef4444; margin-bottom: 10px;">SAVAŞ ALANI</h3>
-            <div class="stats-card">
-                <b>Şövalye</b> - Can: <span id="player-hp">100</span>/<span id="player-max-hp">100</span>
-                <div class="bar-container"><div id="player-bar" class="bar"></div></div>
-            </div>
-            <div class="stats-card">
-                <b id="enemy-name">Vahşi Ork</b> - Can: <span id="enemy-hp">80</span>/<span id="enemy-max-hp">80</span>
-                <div class="bar-container"><div id="enemy-bar" class="bar enemy-bar"></div></div>
+            <h3 style="color:#ef4444; margin-bottom: 10px;">SAVAŞ ALANI (Aşama <span id="stage-num">1</span>)</h3>
+            
+            <div class="battle-card">
+                <div>🛡️ <b>Şövalye</b> - Can: <span id="p-hp">100</span>/100</div>
+                <div class="hp-bar-bg"><div id="p-bar" class="hp-bar-fill"></div></div>
             </div>
 
-            <div class="btn-group">
-                <button class="btn-attack" onclick="normalSaldiri()">⚔️ Saldır (-10 ⚡)</button>
-                <button class="btn-special" onclick="ozelYetenek()">🔥 Güçlü Darbe</button>
-                <button class="btn-heal" onclick="iyiles()">🧪 İyileş</button>
+            <div class="battle-card">
+                <div>👹 <b id="e-name">Vahşi Ork</b> - Can: <span id="e-hp">80</span>/<span id="e-max-hp">80</span></div>
+                <div class="hp-bar-bg"><div id="e-bar" class="hp-bar-fill enemy-fill"></div></div>
             </div>
-            <div id="log" style="margin-top: 10px; font-size: 13px; color: #fbbf24;">Savaşa hazırsın!</div>
-            <button class="btn-back" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
+
+            <div class="battle-actions">
+                <button class="action-btn attack" onclick="attack()">⚔️ Saldır (-10⚡)</button>
+                <button class="action-btn" onclick="specialAttack()" style="background:#7c3aed;">🔥 Özel Darbe</button>
+                <button class="action-btn heal" onclick="heal()">🧪 İyileş</button>
+                <button class="action-btn" onclick="openScreen('screen-base')" style="background:#475569;">⬅️ Çıkış</button>
+            </div>
+            <div id="battle-log" style="margin-top: 15px; font-size: 11px; color: #fde047;">Düşmanla yüzleşmeye hazırsın!</div>
         </div>
 
-        <!-- 3. GEÇİT EKRANI (Şampiyon Çağırma) -->
+        <!-- 3. GEÇİT (SUMMON) EKRANI -->
         <div id="screen-portal" class="screen">
-            <h2 style="color: #8b5cf6;">KAHRAMAN GEÇİDİ</h2>
-            <p style="margin: 15px 0; font-size: 14px;">Kadim Kristal kullanarak yeni kahramanlar çağır!</p>
-            <button style="background: #8b5cf6; width: 100%; padding: 15px;" onclick="cagirmaYap()">🔮 Kahraman Çağır (500 🪙)</button>
-            <div id="portal-result" style="margin-top: 15px; font-weight: bold; color: #22c55e;"></div>
-            <button class="btn-back" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
+            <h2 style="color:#a855f7; margin-bottom: 10px;">ÇAĞIRMA GEÇİDİ</h2>
+            <p style="font-size: 11px; margin-bottom: 15px;">Antik kristalleri kullanarak şampiyon elde et!</p>
+            <button class="action-btn" style="background:#8b5cf6; width:100%;" onclick="summon()">🔮 Mavi Kristal Çağır (500 🪙)</button>
+            <div id="summon-result" style="margin-top:20px; font-weight:bold; color:#22c55e;"></div>
+            <button class="action-btn" style="background:#475569; margin-top:20px; width:100%;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
         </div>
 
-        <!-- 4. HAN EKRANI (Hero Hub) -->
+        <!-- 4. HAN (TAVERN) EKRANI -->
         <div id="screen-tavern" class="screen">
-            <h2 style="color: #3b82f6;">KAHRAMAN HANI</h2>
-            <p style="margin: 15px 0; font-size: 14px;">Mevcut Kahramanların:</p>
-            <div id="hero-list" style="text-align: left; background: #1e293b; padding: 10px; border-radius: 8px;">
-                🛡️ <b>Şövalye</b> (Seviye 1)<br>
-                🏹 <b>Okçu</b> (Yakında...)
+            <h2 style="color:#3b82f6; margin-bottom: 10px;">KAHRAMAN HANI</h2>
+            <div id="hero-collection" style="text-align:left; font-size: 12px; background: rgba(0,0,0,0.5); padding: 10px; border-radius:6px;">
+                🛡️ Şövalye (Lvl 47) - Ekip Lideri
             </div>
-            <button class="btn-back" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
+            <button class="action-btn" style="background:#475569; margin-top:20px; width:100%;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
         </div>
 
         <!-- 5. PAZAR EKRANI -->
         <div id="screen-market" class="screen">
-            <h2 style="color: #10b981;">TÜCCAR PAZARI</h2>
-            <p style="margin: 15px 0; font-size: 14px;">İksir ve Enerji Satın Al:</p>
-            <button style="background: #10b981; width: 100%; margin-bottom: 10px;" onclick="pazarAl('energy')">⚡ +50 Enerji (100 🪙)</button>
-            <button class="btn-back" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
+            <h2 style="color:#10b981; margin-bottom: 10px;">PAZAR TÜCCARI</h2>
+            <div style="background:rgba(0,0,0,0.5); padding:10px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:12px;">⚡ +50 Enerji Paketi</span>
+                <button class="action-btn heal" onclick="buyEnergy()">100 🪙</button>
+            </div>
+            <button class="action-btn" style="background:#475569; margin-top:20px; width:100%;" onclick="openScreen('screen-base')">⬅️ Üsse Dön</button>
         </div>
 
     </div>
 
-    <!-- Alt Navigasyon Barı -->
-    <div class="bottom-bar">
-        <div class="nav-item active" onclick="openScreen('screen-base')">
-            <div class="nav-icon">🏰</div>
-            <span>Ana Üs</span>
+    <!-- ALT MENÜ BAR (RAID DİZİLİMİ) -->
+    <div class="bottom-hud">
+        <div class="btn-shop-square" onclick="openScreen('screen-market')">
+            🛒 DÜKKÂN
         </div>
-        <div class="nav-item" onclick="openScreen('screen-tavern')">
-            <div class="nav-icon">🛡️</div>
+        <div class="hud-btn" onclick="alert('Vazifeler yakında!')">
+            <span class="icon">📜</span>
+            <span>Vazifeler</span>
+        </div>
+        <div class="hud-btn" onclick="alert('Görevler yakında!')">
+            <span class="icon">🎯</span>
+            <span>Görevler</span>
+        </div>
+        <div class="hud-btn active" onclick="openScreen('screen-base')">
+            <span class="icon">🏰</span>
+            <span>Kale</span>
+        </div>
+        <div class="hud-btn" onclick="openScreen('screen-tavern')">
+            <span class="icon">🛡️</span>
             <span>Şampiyonlar</span>
-        </div>
-        <div class="nav-item" onclick="openScreen('screen-market')">
-            <div class="nav-icon">🛒</div>
-            <span>Dükkan</span>
         </div>
     </div>
 
     <script>
-        // Kaynaklar
-        let energy = 100, maxEnergy = 100;
-        let gold = 2500;
-        let gem = 15;
+        let energy = 154, maxEnergy = 117;
+        let gold = 2390000;
+        let gem = 77;
 
-        // Oyuncu ve Düşman İstatistikleri
         let pHp = 100, pMaxHp = 100;
         let eHp = 80, eMaxHp = 80;
-
-        function updateResources() {
-            document.getElementById('res-energy').innerText = `${energy}/${maxEnergy}`;
-            document.getElementById('res-gold').innerText = gold.toLocaleString();
-            document.getElementById('res-gem').innerText = gem;
-        }
-
-        function openScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
+        let stage = 1;
+        let enemies = ["Vahşi Ork", "Zehirli Goblin", "Gölge Şövalyesi", "Ateş Ejderhası (Boss)"];
 
         function updateUI() {
-            document.getElementById('player-hp').innerText = pHp;
-            document.getElementById('player-max-hp').innerText = pMaxHp;
-            document.getElementById('enemy-hp').innerText = eHp;
-            document.getElementById('enemy-max-hp').innerText = eMaxHp;
+            document.getElementById('res-energy').innerText = `${energy}/${maxEnergy}`;
+            document.getElementById('res-gold').innerText = (gold / 1000000).toFixed(2) + "M";
+            document.getElementById('res-gem').innerText = gem;
 
-            document.getElementById('player-bar').style.width = Math.max(0, (pHp / pMaxHp) * 100) + '%';
-            document.getElementById('enemy-bar').style.width = Math.max(0, (eHp / eMaxHp) * 100) + '%';
-            updateResources();
+            document.getElementById('p-hp').innerText = pHp;
+            document.getElementById('e-hp').innerText = eHp;
+            document.getElementById('e-max-hp').innerText = eMaxHp;
+            document.getElementById('stage-num').innerText = stage;
+
+            document.getElementById('p-bar').style.width = Math.max(0, (pHp / pMaxHp) * 100) + '%';
+            document.getElementById('e-bar').style.width = Math.max(0, (eHp / eMaxHp) * 100) + '%';
         }
 
-        // Savaş Fonksiyonları
-        function normalSaldiri() {
+        function openScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function attack() {
             if (energy < 10) {
-                document.getElementById('log').innerText = "❌ Yetersiz Enerji!";
+                document.getElementById('battle-log').innerText = "❌ Yetersiz Enerji!";
                 return;
             }
             if (pHp <= 0 || eHp <= 0) return;
 
             energy -= 10;
-            let hasar = Math.floor(Math.random() * 12) + 10;
-            eHp -= hasar;
-            document.getElementById('log').innerText = `Düşmana ${hasar} hasar verdin!`;
+            let dmg = Math.floor(Math.random() * 15) + 10;
+            eHp -= dmg;
+            document.getElementById('battle-log').innerText = `Düşmana ${dmg} hasar vuruldu!`;
 
             if (eHp <= 0) {
                 eHp = 0;
-                gold += 300;
-                document.getElementById('log').innerText = "🎉 Zafer! +300 Altın Kazandın!";
+                gold += 50000;
+                stage++;
+                document.getElementById('battle-log').innerText = `🎉 ZAFER! Aşama ${stage}'e geçildi. +50K Gümüş!`;
+                setTimeout(nextEnemy, 1500);
             } else {
                 setTimeout(() => {
-                    let dHasar = Math.floor(Math.random() * 8) + 5;
-                    pHp -= dHasar;
-                    if (pHp <= 0) pHp = 0;
+                    let eDmg = Math.floor(Math.random() * 10) + 5;
+                    pHp = Math.max(0, pHp - eDmg);
                     updateUI();
-                }, 500);
+                }, 400);
             }
             updateUI();
         }
 
-        function ozelYetenek() {
+        function specialAttack() {
             if (pHp <= 0 || eHp <= 0) return;
-            let hasar = Math.floor(Math.random() * 15) + 18;
-            eHp -= hasar;
-            document.getElementById('log').innerText = `🔥 Kritik Vuruş! ${hasar} hasar!`;
+            let dmg = Math.floor(Math.random() * 20) + 20;
+            eHp = Math.max(0, eHp - dmg);
+            document.getElementById('battle-log').innerText = `🔥 KRİTİK VURUŞ! ${dmg} hasar verildi!`;
+            if (eHp <= 0) setTimeout(nextEnemy, 1500);
             updateUI();
         }
 
-        function iyiles() {
+        function heal() {
             if (pHp <= 0) return;
-            pHp = Math.min(pMaxHp, pHp + 25);
-            document.getElementById('log').innerText = "🧪 Can tazelendi!";
+            pHp = Math.min(pMaxHp, pHp + 30);
+            document.getElementById('battle-log').innerText = "🧪 Can yenilendi!";
             updateUI();
         }
 
-        // Çağırma Sistemi
-        function cagirmaYap() {
+        function nextEnemy() {
+            eMaxHp = 80 + (stage * 30);
+            eHp = eMaxHp;
+            let idx = (stage - 1) % enemies.length;
+            document.getElementById('e-name').innerText = enemies[idx];
+            updateUI();
+        }
+
+        function summon() {
             if (gold >= 500) {
                 gold -= 500;
-                let kahramanlar = ["Destansı Okçu", "Efsanevi Ejderha Katili", "Nadir Büyücü", "Sıradan Muhafız"];
-                let secilen = kahramanlar[Math.floor(Math.random() * kahramanlar.length)];
-                document.getElementById('portal-result').innerText = `🎉 Tebrikler! ${secilen} Kazandın!`;
-                updateResources();
-            } else {
-                document.getElementById('portal-result').innerText = "❌ Yetersiz Altın!";
+                let pool = ["⭐ Epik Okçu", "🌟 Efsanevi Ejder Katili", "✨ Nadir Büyücü"];
+                let res = pool[Math.floor(Math.random() * pool.length)];
+                document.getElementById('summon-result').innerText = `Tebrikler! ${res} Kazandın!`;
+                updateUI();
             }
         }
 
-        // Pazar Sistemi
-        function pazarAl(type) {
-            if (type === 'energy' && gold >= 100) {
+        function buyEnergy() {
+            if (gold >= 100) {
                 gold -= 100;
-                energy = Math.min(maxEnergy, energy + 50);
-                updateResources();
-                alert("⚡ Enerji satın alındı!");
+                energy += 50;
+                updateUI();
+                alert("⚡ Enerji yenilendi!");
             }
         }
 
         updateUI();
     </script>
 </body>
-</html
+</html>
