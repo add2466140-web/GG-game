@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Raid: Shadow Legends - Modular Data Engine</title>
+    <title>Raid: Shadow Legends - Summon Gacha Engine</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background-color: #030509; color: #f8fafc; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
@@ -51,18 +51,18 @@
     <div class="viewport">
         <!-- 1. ŞAMPİYONLAR (HAN) EKRANI -->
         <div id="screen-tavern" class="screen active">
-            <h3 style="color:#f59e0b; margin-bottom:8px; font-size:13px;">🛡️ Kahraman Veritabanı (Han)</h3>
+            <h3 style="color:#f59e0b; margin-bottom:8px; font-size:13px;">🛡️ Kahraman Envanteri (Han)</h3>
             <div class="tavern-wrapper">
                 <div class="hero-sidebar" id="hero-list-container"></div>
                 <div class="hero-detail-view" id="hero-detail-container">
-                    <p style="color:#94a3b8;">Şampiyon yükleniyor...</p>
+                    <p style="color:#94a3b8;">Şampiyon seçin...</p>
                 </div>
             </div>
         </div>
 
         <!-- 2. ÇAĞIRMA GEÇİDİ EKRANI -->
         <div id="screen-portal" class="screen">
-            <h3 style="color:#22c55e; margin-bottom:8px; font-size:13px;">🔮 Çağırma Geçidi (Shards)</h3>
+            <h3 style="color:#22c55e; margin-bottom:8px; font-size:13px;">🔮 Çağırma Geçidi</h3>
             <div class="portal-wrapper">
                 <div class="shard-sidebar" id="shard-list-container"></div>
                 <div style="flex:1; background: rgba(15,23,42,0.92); border: 1px solid #475569; border-radius: 8px; padding: 12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;" id="shard-detail-container">
@@ -73,20 +73,23 @@
     </div>
 
     <div class="bottom-footer">
-        <div class="footer-tab active" id="tab-tavern" onclick="openScreen('screen-tavern', this)"><span>🛡️</span>Şampiyonlar</div>
+        <div class="footer-tab active" id="tab-tavern" onclick="openScreen('screen-tavern', this)"><span>🛡️</span>Han</div>
         <div class="footer-tab" id="tab-portal" onclick="openScreen('screen-portal', this)"><span>🔮</span>Geçit</div>
     </div>
 
     <script>
-        let allHeroes = [];
+        let masterHeroPool = []; // Tüm şampiyon havuzu
+        let playerHeroes = [];   // Kullanıcının sahip oldukları
         let allShards = [];
         let gold = 2390000;
 
-        // Verileri JSON dosyalarından çekme
         async function loadGameData() {
             try {
                 const resHeroes = await fetch('heroes.json');
-                allHeroes = await resHeroes.json();
+                masterHeroPool = await resHeroes.json();
+                
+                // Başlangıçta oyuncuya ilk 2 şampiyonu verelim
+                playerHeroes = [masterHeroPool[0], masterHeroPool[1]];
                 renderHeroList();
 
                 const resShards = await fetch('shards.json');
@@ -100,7 +103,7 @@
         function renderHeroList() {
             const listContainer = document.getElementById('hero-list-container');
             listContainer.innerHTML = '';
-            allHeroes.forEach((hero, index) => {
+            playerHeroes.forEach((hero, index) => {
                 const card = document.createElement('div');
                 card.className = `hero-card-thumb ${index === 0 ? 'active' : ''}`;
                 card.style.backgroundImage = `url('${hero.avatar}')`;
@@ -108,12 +111,12 @@
                 card.onclick = () => selectHero(index);
                 listContainer.appendChild(card);
             });
-            if (allHeroes.length > 0) selectHero(0);
+            if (playerHeroes.length > 0) selectHero(0);
         }
 
         function selectHero(index) {
             document.querySelectorAll('.hero-card-thumb').forEach((el, i) => el.classList.toggle('active', i === index));
-            const hero = allHeroes[index];
+            const hero = playerHeroes[index];
             document.getElementById('hero-detail-container').innerHTML = `
                 <div style="display:flex; gap:10px; align-items:center;">
                     <img src="${hero.avatar}" style="width:70px; height:70px; border-radius:6px; border:2px solid #f59e0b; object-fit: cover;">
@@ -150,18 +153,28 @@
                 <div style="font-size:50px; margin-bottom:6px;">${shard.icon}</div>
                 <b style="color:#f59e0b; font-size:13px;">${shard.name}</b>
                 <p style="font-size:9px; color:#94a3b8; margin:4px 0;">${shard.description}</p>
-                <span style="font-size:9px; color:#22c55e; margin-bottom:8px;">İçerik: ${shard.rarity}</span>
-                <button class="btn-action" onclick="summonShard('${shard.name}', ${shard.cost})">${shard.cost} ${shard.currency} - Çağır</button>
+                <span style="font-size:9px; color:#22c55e; margin-bottom:8px;">Havuzdaki Tüm Şampiyonlar Çıkabilir!</span>
+                <button class="btn-action" onclick="summonChampion()">Parçayı Aç ve Çağır (${shard.cost} 🪙)</button>
             `;
         }
 
-        function summonShard(name, cost) {
+        function summonChampion() {
+            let cost = 500;
             if (gold >= cost) {
                 gold -= cost;
                 document.getElementById('gold-display').innerText = `🪙 ${(gold/1000000).toFixed(2)}M`;
-                alert(`🎉 Başarıyla ${name} kullanıldı ve şampiyon çağrıldı!`);
+
+                // Rastgele şampiyon seçme (RNG)
+                const randomIndex = Math.floor(Math.random() * masterHeroPool.length);
+                const wonHero = masterHeroPool[randomIndex];
+
+                // Oyuncunun envanterine ekle
+                playerHeroes.push(wonHero);
+                renderHeroList();
+
+                alert(`🎉 Tebrikler! Çağırma Başarılı:\n\n✨ ${wonHero.name} (${wonHero.rarity}) kazandın! Han'a eklendi.`);
             } else {
-                alert("❌ Yetersiz kaynak!");
+                alert("❌ Yetersiz Gümüş!");
             }
         }
 
