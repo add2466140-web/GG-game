@@ -1,37 +1,151 @@
-name: Build Android APK
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raid: Mobil RPG</title>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 15px; margin: 0; }
+        h1 { color: #f59e0b; margin-bottom: 5px; font-size: 24px; }
+        .stats { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 15px; margin: 15px auto; max-width: 350px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .bar-container { background: #334155; border-radius: 8px; overflow: hidden; height: 16px; margin: 8px 0 15px 0; }
+        .bar { height: 100%; width: 100%; background: #22c55e; transition: width 0.3s ease; }
+        .enemy-bar { background: #ef4444; }
+        .btn-group { display: flex; flex-direction: column; gap: 10px; max-width: 350px; margin: 0 auto; }
+        button { background-color: #3b82f6; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+        button:active { transform: scale(0.98); }
+        .btn-attack { background-color: #ef4444; }
+        .btn-special { background-color: #8b5cf6; }
+        .btn-heal { background-color: #10b981; }
+        .log { background: #1e293b; border-radius: 8px; padding: 10px; margin: 15px auto; max-width: 350px; font-size: 14px; min-height: 40px; color: #cbd5e1; }
+    </style>
+</head>
+<body>
 
-on:
-  workflow_dispatch:
+    <h1>Raid: Mobil RPG</h1>
+    <p>Seviye: <span id="level">1</span> | Skor: <span id="score">0</span></p>
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    <!-- Oyuncu Kartı -->
+    <div class="stats">
+        <h3 id="hero-name">Şövalye</h3>
+        <p>Can: <span id="player-hp">100</span> / 100</p>
+        <div class="bar-container"><div id="player-bar" class="bar"></div></div>
+    </div>
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+    <!-- Düşman Kartı -->
+    <div class="stats">
+        <h3 id="enemy-name">Vahşi Ork</h3>
+        <p>Can: <span id="enemy-hp">80</span> / 80</p>
+        <div class="bar-container"><div id="enemy-bar" class="bar enemy-bar"></div></div>
+    </div>
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
+    <!-- Aksiyon Butonları -->
+    <div class="btn-group">
+        <button class="btn-attack" onclick="normalSaldiri()">⚔️ Normal Saldırı</button>
+        <button class="btn-special" onclick="ozelYetenek()">🔥 Güçlü Darbe</button>
+        <button class="btn-heal" onclick="iyiles()">🧪 İyileş (Can Bas)</button>
+    </div>
 
-      - name: Install Cordova & Build APK
-        run: |
-          npm install -g cordova
-          cordova create myApp com.raid.game RaidGame
-          cd myApp
-          cordova platform add android
-          rm -rf www/*
-          cp -r ../index.html www/
-          cordova build android --debug
+    <div class="log" id="log">Savaş başladı! Hamleni yap.</div>
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: RaidGame-APK
-          path: myApp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+    <script>
+        let pHp = 100, pMaxHp = 100;
+        let eHp = 80, eMaxHp = 80;
+        let level = 1;
+        let score = 0;
+
+        function updateUI() {
+            document.getElementById('player-hp').innerText = pHp;
+            document.getElementById('enemy-hp').innerText = eHp;
+            document.getElementById('level').innerText = level;
+            document.getElementById('score').innerText = score;
+
+            let pPercent = (pHp / pMaxHp) * 100;
+            let ePercent = (eHp / eMaxHp) * 100;
+            document.getElementById('player-bar').style.width = Math.max(0, pPercent) + '%';
+            document.getElementById('enemy-bar').style.width = Math.max(0, ePercent) + '%';
+        }
+
+        function logYaz(mesaj) {
+            document.getElementById('log').innerText = mesaj;
+        }
+
+        function dusmanSaldirisi() {
+            if (eHp > 0) {
+                let hasar = Math.floor(Math.random() * 8) + 5;
+                pHp -= hasar;
+                if (pHp < 0) pHp = 0;
+                if (pHp === 0) {
+                    logYaz("Yenildin! Oyun yeniden başlıyor...");
+                    setTimeout(resetGame, 2000);
+                }
+            }
+        }
+
+        function normalSaldiri() {
+            if (pHp <= 0 || eHp <= 0) return;
+            let hasar = Math.floor(Math.random() * 10) + 10;
+            eHp -= hasar;
+            logYaz(`Düşmana ${hasar} hasar verdin!`);
+            
+            checkVictory();
+            if (eHp > 0) {
+                setTimeout(dusmanSaldirisi, 500);
+            }
+            updateUI();
+        }
+
+        function ozelYetenek() {
+            if (pHp <= 0 || eHp <= 0) return;
+            let hasar = Math.floor(Math.random() * 15) + 18;
+            eHp -= hasar;
+            logYaz(`🔥 Kritik Vuruş! Düşmana ${hasar} hasar verdin!`);
+            
+            checkVictory();
+            if (eHp > 0) {
+                setTimeout(dusmanSaldirisi, 500);
+            }
+            updateUI();
+        }
+
+        function iyiles() {
+            if (pHp <= 0 || eHp <= 0) return;
+            let miktar = 20;
+            pHp += miktar;
+            if (pHp > pMaxHp) pHp = pMaxHp;
+            logYaz(`🧪 İyileştin! +${miktar} Can kazandın.`);
+            
+            setTimeout(dusmanSaldirisi, 500);
+            updateUI();
+        }
+
+        function checkVictory() {
+            if (eHp <= 0) {
+                eHp = 0;
+                score += 100;
+                level++;
+                logYaz(`🎉 Zafer! Düşmanı yendin, Seviye ${level} e geçiliyor...`);
+                setTimeout(yeniDusman, 2000);
+            }
+        }
+
+        function yeniDusman() {
+            eMaxHp = 80 + (level * 20);
+            eHp = eMaxHp;
+            pHp = pMaxHp; // Her tur kahraman biraz tazelenir
+            logYaz(`Seviye ${level}! Yeni ve daha güçlü bir düşman belirdi!`);
+            updateUI();
+        }
+
+        function resetGame() {
+            pHp = 100; pMaxHp = 100;
+            eHp = 80; eMaxHp = 80;
+            level = 1; score = 0;
+            logYaz("Oyun sıfırlandı. Tekrar başla!");
+            updateUI();
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
